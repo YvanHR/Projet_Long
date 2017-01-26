@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+
+#wrapper {
+	width: 900px;
+	margin: auto;
+}
+
+#image {
+	height: 500px;
+}
+
+#study_end {
+	display: none;
+}
