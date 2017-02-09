@@ -5,6 +5,7 @@ var curr_rep;
 
 
 var study_data;
+var textIntro = "Voici ce que nous attendons de vous : nous allons vous présenter une série de quelques photos comportant divers objets. Nous allons ensuite vous poser des questions en rapport avec ces objets, que nous préciserons dans les questions. Votre objectif est de choisir la réponse que vous trouvez la plus pertinente. Vous choississez celle qui vous paraît la plus plausible parmi les diverses nuances qui vous serons proposées, il n'y pas de bonne ou de mauvaise réponse.";
 
 // Ordre des images pendant l'étude
 var img_ids = [];
@@ -16,11 +17,11 @@ var started = false;
 
 function doLoad() {
 	
-	loadJSON();
+	setupHomePage();
 
 }
 
-function loadJSON() {
+function loadJSON()  {
 	// Récupération du fichier JSON
 	var xhr_object=new XMLHttpRequest();
 
@@ -39,6 +40,7 @@ function loadJSON() {
 	xhr_object.send(null);
 }
 
+
 function prepareStudy() {
 	// Pour l'étude il faut : 
 	//	1) Tirer un ordre au sort pour les images
@@ -50,41 +52,43 @@ function prepareStudy() {
 		img_ids.push(i);
 		representations.push((i%3) + 1);
 	}
+	/*
+	 * Pour adapter le choix d'images comme voulu par nous :
+	 * - numéroter les photos de 1 à 12 avec 1-2 : cas simple, 3-7 : autre bail, 8-12 : encore autre bail
+	 * - faire 5 choix avec du random : 1 entre 1-2, 2 entre 3-7 et 2 entre 8-12
+	 * - les mettre dans le tableau img_ids, le reste du programme déjà codé par Axel le traitera comme il faut par la suite
+	 */
 	img_ids = shuffleArray(img_ids);
 	representations = shuffleArray(representations);
-		
-	// Mise en place du bouton de lancement du sondage
-	var btnElt = document.getElementById("StartButton");
-	btnElt.addEventListener("click", nextTask, false);
+	
+	// Masquage de l'introduction
+	hideElement("StartButton");
+	hideElement("intro");
 	
 	// Mise en place du bouton Next
 	var btnElt = document.getElementById("NextButton");
 	btnElt.addEventListener("click", nextTask, false);
 		
+	// Affichage des éléments nécessaires au sondage
+	displayElement("upper_wrapper");
+	displayElement("middle_wrapper");
+	displayElement("NextButton");
+	
 	console.log(img_ids)
 	console.log(representations)
 }
 
 function nextTask() {
-	
-	/*
-		if (!started) {
-			setupHomePage();
-			console.log("start successful");
-			
-			started = true;
-		} else {
-	*/
-	
+
 	// Vérifier qu'une checkbox a été cochée
 	var idChecked = checkRadioButtons();
-		
+
 	if (idChecked) {
 		// Enregistrer la réponse en BD
 		persistRelation(idChecked);
-		
+
 		progress++;
-				
+
 		if (progress == img_ids.length) {
 			setupStudyEnd();
 		} else {
@@ -120,9 +124,6 @@ function checkRadioButtons() {
 
 function setupNewImage() {
 
-	// On cache le boutton de démarrage
-	hideElement("StartButton");
-	
 	var progressElt = document.getElementById("progress");
 	progressElt.innerHTML = "Question " + (progress+1) + "/" + img_ids.length;
 		
@@ -186,13 +187,20 @@ function addRadioButton(names, id_obj1, id_obj2) {
 // Génère la page d'accueil
 function setupHomePage() {
 
-	// Texte d'introduction
-	var textIntro = "Voici ce que nous attendons de vous : nous allons vous présenter une série de quelques photos comportant divers objets. Nous allons ensuite vous poser des questions en rapport avec ces objets, que nous préciserons dans les questions. Votre objectif est de choisir la réponse que vous trouvez la plus pertinente. Vous choississez celle qui vous paraît la plus plausible parmi les diverses nuances qui vous serons proposées, il n'y pas de bonne ou de mauvaise réponse."
-	var pElt = document.getElementById('study_wrapper');
+	// On cache les éléments inutiles
+	hideElement("upper_wrapper");
+	hideElement("middle_wrapper");
+	hideElement("NextButton");
 	
+	// Texte d'introduction
+	var pElt = document.getElementById('intro');
 	pElt.innerHTML += "<p>" + "Bienvenue et merci de prendre le temps de participer à ce sondage !"+ "</p>";
 	pElt.innerHTML += "<p>" + textIntro + "</p>";
 
+	// Mise en place du bouton de lancement du sondage
+	var btnElt = document.getElementById("StartButton");
+	btnElt.addEventListener("click", loadJSON, false);
+	
 	// Image de présentation
 	var imgElt = document.getElementById('image');
 	imgElt.src = "Images/image_descriptive.png";
