@@ -12,12 +12,12 @@ var img_ids = [];
 var representations = [];
 
 var progress = 0;
+var started = false;
 
 function doLoad() {
 	
 	loadJSON();
-	
-	console.log('Hello');
+
 }
 
 function loadJSON() {
@@ -52,24 +52,39 @@ function prepareStudy() {
 	}
 	img_ids = shuffleArray(img_ids);
 	representations = shuffleArray(representations);
+		
+	// Mise en place du bouton de lancement du sondage
+	var btnElt = document.getElementById("StartButton");
+	btnElt.addEventListener("click", nextTask, false);
 	
 	// Mise en place du bouton Next
 	var btnElt = document.getElementById("NextButton");
 	btnElt.addEventListener("click", nextTask, false);
+		
 	console.log(img_ids)
 	console.log(representations)
 }
 
 function nextTask() {
+	
+	/*
+		if (!started) {
+			setupHomePage();
+			console.log("start successful");
+			
+			started = true;
+		} else {
+	*/
+	
 	// Vérifier qu'une checkbox a été cochée
 	var idChecked = checkRadioButtons();
-	
+		
 	if (idChecked) {
 		// Enregistrer la réponse en BD
 		persistRelation(idChecked);
 		
 		progress++;
-		
+				
 		if (progress == img_ids.length) {
 			setupStudyEnd();
 		} else {
@@ -104,9 +119,13 @@ function checkRadioButtons() {
 }
 
 function setupNewImage() {
+
+	// On cache le boutton de démarrage
+	hideElement("StartButton");
+	
 	var progressElt = document.getElementById("progress");
 	progressElt.innerHTML = "Question " + (progress+1) + "/" + img_ids.length;
-	
+		
 	// Nom de l'image
 	var representation_type = "";
 	var names_aux = study_data[img_ids[progress]];
@@ -146,8 +165,7 @@ function setupNewImage() {
 
 	pElt.innerHTML += "<input type='radio' name='between' value='None' id='None'/>";
 	pElt.innerHTML += "Aucun objet n'est entre les/ au milieu des deux autres<br/>";
-	
-	
+		
 }
 
 function addRadioButton(names, id_obj1, id_obj2) {	
@@ -162,6 +180,23 @@ function addRadioButton(names, id_obj1, id_obj2) {
 	nameId = "M_" + id_obj1 + "_" + id_obj2;
 	pElt.innerHTML += "<input type='radio' name='between' value='" + nameId + "' id='" + nameId + "'/>";
 	pElt.innerHTML += names[id_obj3-1] + " se trouve au milieu de " + names[id_obj1-1] + " et de " + names[id_obj2-1] + "<br/>";
+	
+}
+
+// Génère la page d'accueil
+function setupHomePage() {
+
+	// Texte d'introduction
+	var textIntro = "Voici ce que nous attendons de vous : nous allons vous présenter une série de quelques photos comportant divers objets. Nous allons ensuite vous poser des questions en rapport avec ces objets, que nous préciserons dans les questions. Votre objectif est de choisir la réponse que vous trouvez la plus pertinente. Vous choississez celle qui vous paraît la plus plausible parmi les diverses nuances qui vous serons proposées, il n'y pas de bonne ou de mauvaise réponse."
+	var pElt = document.getElementById('study_wrapper');
+	
+	pElt.innerHTML += "<p>" + "Bienvenue et merci de prendre le temps de participer à ce sondage !"+ "</p>";
+	pElt.innerHTML += "<p>" + textIntro + "</p>";
+
+	// Image de présentation
+	var imgElt = document.getElementById('image');
+	imgElt.src = "Images/image_descriptive.png";
+	
 }
 
 function setupStudyEnd() {
@@ -182,8 +217,6 @@ function displayElement(id) {
 	var e = document.getElementById(id);
 	e.style.display = "inline-block";
 }
-
-
 
 /**
  * Randomize array element order in-place.
